@@ -692,3 +692,48 @@ top_rank = ranked_data.filter(col("rank") == 1)
 top_rank.show()
 
 ```
+Case When Statements in SQL
+
+```python
+from pyspark.sql import functions as F
+
+df = spark.createDataFrame([(1, "John", "A"), (2, "Jane", "B"), (3, "Jim", "C")], ["id", "name", "grade"])
+
+df = df.withColumn("result", 
+                   F.when(F.col("grade") == "A", "Excellent")
+                   .when(F.col("grade") == "B", "Good")
+                   .otherwise("Average"))
+
+df.show()
+
+# Output:
+# +---+-----+-----+-------+
+# | id| name|grade| result|
+# +---+-----+-----+-------+
+# |  1| John|    A|Excellent|
+# |  2| Jane|    B|    Good|
+# |  3|  Jim|    C| Average|
+# +---+-----+-----+-------+
+
+```
+```python
+from pyspark.sql.functions import udf
+from pyspark.sql.types import ArrayType, IntegerType
+
+# Define the UDF that takes two arrays and performs some operation
+def perform_operation(array1, array2):
+    # Perform operation here
+    result = []
+    for i in range(len(array1)):
+        result.append(array1[i] + array2[i])
+    return result
+
+# Define the UDF's return type
+udf_return_type = ArrayType(IntegerType())
+
+# Create the UDF
+udf_operation = udf(perform_operation, udf_return_type)
+
+# Use withColumn to apply the UDF to the dataframe
+df = df.withColumn("new_column", udf_operation(df["array_column_1"], df["array_column_2"]))
+```
